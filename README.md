@@ -32,10 +32,10 @@ require(game.ReplicatedStorage.GarbageService)
 | `partpropertymodify` | Any BasePart in Workspace has its properties modified | Warning + restore value |
 
 ## Examples
-**Humanoid properties modified (example11)**
+**Humanoid properties modified**
 ![example11](example11.png)
 
-**Part properties modified (example22)**
+**Part properties modified**
 ![example22](example22.png)
 
 ## array_types
