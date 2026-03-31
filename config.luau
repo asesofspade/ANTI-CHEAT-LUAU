@@ -1,0 +1,14 @@
+local Config = {
+	MAX_WALKSPEED        = 25,
+	MAX_REAL_SPEED       = 30,
+	MAX_AIR_TIME         = 2.0,
+	MAX_VERTICAL_SPEED   = 60,
+	NOCLIP_CHECK_DIST    = 3,
+	TP_TOLERANCE = 15,
+	NOCLIP_CONFIRM_TICKS = 3,
+	CHECK_INTERVAL       = 0.25,
+	MAX_VIOLATIONS       = 3,
+	VIOLATION_DECAY_TIME = 30,
+}
+
+return Config
