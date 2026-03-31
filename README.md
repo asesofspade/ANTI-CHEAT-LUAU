@@ -1,4 +1,4 @@
-# AntiCheat - Sistema de Detección de Trucos
+# AntiCheat
 
 Un sistema que detecta y elimina jugadores que usan hacks como fly, speed, noclip y teleport en Roblox.
 
