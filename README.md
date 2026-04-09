@@ -252,16 +252,16 @@ Calculates the maximum allowed distance with: max speed × time + lag margin + t
 
 ```lua
 local Config = {
-    MAX_WALKSPEED = 25,              -- Maximum walk speed
-    MAX_REAL_SPEED = 30,             -- Maximum real speed
-    MAX_AIR_TIME = 2.0,              -- Maximum seconds in the air
-    MAX_VERTICAL_SPEED = 60,         -- Maximum vertical speed
-    NOCLIP_CHECK_DIST = 3,           -- Distance for noclip check
-    TP_TOLERANCE = 15,               -- Teleport tolerance
-    NOCLIP_CONFIRM_TICKS = 3,        -- Frames to confirm noclip
-    CHECK_INTERVAL = 0.25,           -- How often to check (in seconds)
-    MAX_VIOLATIONS = 3,              -- Violations before kicking
-    VIOLATION_DECAY_TIME = 30,       -- Seconds to reduce 1 violation
+    MAX_WALKSPEED = 25,             
+    MAX_REAL_SPEED = 30,            
+    MAX_AIR_TIME = 2.0,           
+    MAX_VERTICAL_SPEED = 60,       
+    NOCLIP_CHECK_DIST = 3,        
+    TP_TOLERANCE = 15,            
+    NOCLIP_CONFIRM_TICKS = 3,     
+    CHECK_INTERVAL = 0.25,           
+    MAX_VIOLATIONS = 3,             
+    VIOLATION_DECAY_TIME = 30,      
 }
 ```
 
@@ -272,12 +272,12 @@ Stores information for each player:
 ```lua
 function PlayerData.init(player)
     store[player.UserId] = {
-        violations = 0,           -- Violation counter
-        airTime = 0,              -- Accumulated airborne time
-        noclipHits = 0,           -- Noclip detections
-        lastViolationTick = tick(), -- Last violation timestamp
-        lastPosition = nil,       -- Previous position
-        tpHits = 0,               -- Teleport detections
+        violations = 0,          
+        airTime = 0,             
+        noclipHits = 0,         
+        lastViolationTick = tick(),
+        lastPosition = nil,     
+        tpHits = 0,            
     }
 end
 ```
