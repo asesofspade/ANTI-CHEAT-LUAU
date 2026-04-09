@@ -1,41 +1,38 @@
 # AntiCheat
 
-Un sistema que detecta y elimina jugadores que usan hacks como fly, speed, noclip y teleport en Roblox.
+A system that detects and removes players using hacks like fly, speed, noclip, and teleport in Roblox.
 
-## Estructura del Proyecto
-
-```
+## Project Structure
 AntiCheat/
-├── AntiCheat.lua          # Script principal
-├── config.lua             # Configuración
-├── playerData.lua         # Datos del jugador
-└── checks/                # Módulos de detección
-    ├── fly.lua
-    ├── speed.lua
-    ├── noclip.lua
-    └── teleport.lua
-```
+├── AntiCheat.lua          # Main script
+├── config.lua             # Configuration
+├── playerData.lua         # Player data
+└── checks/                # Detection modules
+├── fly.lua
+├── speed.lua
+├── noclip.lua
+└── teleport.lua
 
-## Como Funciona
+## How It Works
 
-El anticheat tiene un flujo principal simple:
+The anticheat has a simple main flow:
 
-1. Cuando un jugador entra al servidor, se inicializa su data
-2. Cuando el jugador respawnea, comienza el monitoreo
-3. Cada 0.25 segundos se ejecutan 4 verificaciones diferentes
-4. Si hay demasiadas violaciones, el jugador es expulsado
-5. Se envía un reporte a Discord
+1. When a player joins the server, their data is initialized
+2. When the player respawns, monitoring begins
+3. Every 0.25 seconds, 4 different checks are run
+4. If there are too many violations, the player is kicked
+5. A report is sent to Discord
 
-## Script Principal (AntiCheat.lua)
+## Main Script (AntiCheat.lua)
 
-El archivo principal hace lo siguiente:
+The main file does the following:
 
 ```lua
 local AntiCheat = {}
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
--- Carga todos los checks
+-- Load all checks
 local checks = {
     require(Folder.checks.speed),
     require(Folder.checks.fly),
@@ -44,7 +41,7 @@ local checks = {
 }
 ```
 
-Cuando un jugador entra:
+When a player joins:
 
 ```lua
 local function onPlayerAdded(player)
@@ -58,7 +55,7 @@ local function onPlayerAdded(player)
 end
 ```
 
-El monitoreo ocurre cada 0.25 segundos:
+Monitoring occurs every 0.25 seconds:
 
 ```lua
 local function monitorCharacter(player, character)
@@ -70,7 +67,7 @@ local function monitorCharacter(player, character)
             for _, check in checks do
                 local ok, err = pcall(check, player, character, data, flag)
                 if not ok then
-                    warn("[AntiCheat] Error en check:", err)
+                    warn("[AntiCheat] Error in check:", err)
                 end
             end
         end
@@ -78,11 +75,11 @@ local function monitorCharacter(player, character)
 end
 ```
 
-## Sistema de Violaciones
+## Violation System
 
-Cada detección suma 1 violación. Las violaciones disminuyen con el tiempo automaticamente.
+Each detection adds 1 violation. Violations decrease over time automatically.
 
-Código que maneja las violaciones:
+Code that handles violations:
 
 ```lua
 local function flag(player, reason, detail)
@@ -98,23 +95,23 @@ local function flag(player, reason, detail)
     data.violations += 1
     
     if data.violations >= Config.MAX_VIOLATIONS then
-        player:Kick("Comportamiento sospechoso detectado.")
+        player:Kick("Suspicious behavior detected.")
         sendToDiscord(player, reason, detail)
     end
 end
 ```
 
-Ejemplo: Si pasaron 60 segundos y VIOLATION_DECAY_TIME es 30:
+Example: If 60 seconds have passed and VIOLATION_DECAY_TIME is 30:
 - decay = 60 / 30 = 2
-- Si tenía 3 violaciones, ahora tiene 1
+- If they had 3 violations, they now have 1
 
-Si acumula 3 violaciones sin que decaigan, es expulsado.
+If they accumulate 3 violations before they decay, they are kicked.
 
-## Detección de Fly
+## Fly Detection
 
-El archivo fly.lua detecta el vuelo de 3 formas:
+The fly.lua file detects flying in 3 ways:
 
-Forma 1: Tiempo en aire
+Method 1: Airborne time
 ```lua
 if isAirborne(humanoid) then
     data.airTime = (data.airTime or 0) + Config.CHECK_INTERVAL
@@ -127,20 +124,20 @@ if data.airTime > Config.MAX_AIR_TIME + lagTolerance then
 end
 ```
 
-Si un jugador está en el aire más de 2 segundos sin tocar el suelo, es sospechoso.
+If a player is in the air for more than 2 seconds without touching the ground, it's suspicious.
 
-Forma 2: Velocidad vertical
+Method 2: Vertical speed
 ```lua
 local vel = hrp.AssemblyLinearVelocity
 
 if vel.Y > Config.MAX_VERTICAL_SPEED + lagTolerance * 10 then
-    flag(player, "Fly hack (velocidad vertical)", "VelY=" .. vel.Y)
+    flag(player, "Fly hack (vertical speed)", "VelY=" .. vel.Y)
 end
 ```
 
-Si sube muy rápido (más de 60 studs por segundo), está volando.
+If they move upward too fast (more than 60 studs per second), they are flying.
 
-Forma 3: Hover (flotación)
+Method 3: Hover (floating)
 ```lua
 local distToGround = 999
 local result = workspace:Raycast(hrp.Position, Vector3.new(0, -50, 0))
@@ -156,20 +153,20 @@ if distToGround > 5 and math.abs(vel.Y) < 1 and isAirborne(humanoid) then
 end
 ```
 
-Si está a más de 5 studs del suelo sin caer y sin subir, está flotando.
+If they are more than 5 studs above the ground without falling or rising, they are hovering.
 
-## Detección de Speed
+## Speed Detection
 
-El archivo speed.lua detecta velocidad excesiva:
+The speed.lua file detects excessive speed:
 
 ```lua
--- Primero verifica que no haya modificado WalkSpeed
+-- First checks if WalkSpeed was modified
 if humanoid.WalkSpeed > Config.MAX_WALKSPEED + 0.5 then
     humanoid.WalkSpeed = Config.MAX_WALKSPEED
-    flag(player, "WalkSpeed modificado", "WalkSpeed=" .. humanoid.WalkSpeed)
+    flag(player, "WalkSpeed modified", "WalkSpeed=" .. humanoid.WalkSpeed)
 end
 
--- Luego verifica la velocidad real de movimiento
+-- Then checks the actual movement speed
 local vel = hrp.AssemblyLinearVelocity
 local horizSpeed = Vector3.new(vel.X, 0, vel.Z).Magnitude
 
@@ -178,11 +175,11 @@ if horizSpeed > Config.MAX_REAL_SPEED then
 end
 ```
 
-Max WalkSpeed es 25 y Max Real Speed es 30.
+Max WalkSpeed is 25 and Max Real Speed is 30.
 
-## Detección de NoClip
+## NoClip Detection
 
-El archivo noclip.lua detecta cuando atraviesa paredes:
+The noclip.lua file detects when a player phases through walls:
 
 ```lua
 local params = RaycastParams.new()
@@ -204,7 +201,7 @@ end
 if solidHits > 0 then
     data.noclipHits = (data.noclipHits or 0) + 1
     if data.noclipHits >= Config.NOCLIP_CONFIRM_TICKS then
-        flag(player, "NoClip detectado", "Overlapping=" .. solidHits)
+        flag(player, "NoClip detected", "Overlapping=" .. solidHits)
         data.noclipHits = 0
     end
 else
@@ -212,12 +209,11 @@ else
 end
 ```
 
-Usa GetPartBoundsInBox para encontrar partes sólidas que overlappean con el jugador.
-Si encuentra demasiadas, es NoClip.
+Uses GetPartBoundsInBox to find solid parts overlapping with the player. If too many are found, it's NoClip.
 
-## Detección de Teleport
+## Teleport Detection
 
-El archivo teleport.lua detecta saltos imposibles:
+The teleport.lua file detects impossible jumps:
 
 ```lua
 local currentPos = hrp.Position
@@ -238,7 +234,7 @@ if distance > maxAllowed then
     data.tpHits = (data.tpHits or 0) + 1
     
     if data.tpHits >= 2 then
-        flag(player, "Teleport detectado", "Dist=" .. distance)
+        flag(player, "Teleport detected", "Dist=" .. distance)
         data.tpHits = 0
     end
 else
@@ -248,47 +244,47 @@ end
 data.lastPosition = currentPos
 ```
 
-Compara la posición actual con la anterior. Si saltó demasiada distancia en 0.25 segundos, es teleport.
+Compares the current position to the previous one. If they jumped too far in 0.25 seconds, it's a teleport.
 
-Calcula la distancia máxima permitida con: velocidad máxima * tiempo + margen por lag + tolerancia.
+Calculates the maximum allowed distance with: max speed × time + lag margin + tolerance.
 
-## Configuración (config.lua)
+## Configuration (config.lua)
 
 ```lua
 local Config = {
-    MAX_WALKSPEED = 25,              -- Velocidad de caminata máxima
-    MAX_REAL_SPEED = 30,             -- Velocidad real máxima
-    MAX_AIR_TIME = 2.0,              -- Segundos máximo en el aire
-    MAX_VERTICAL_SPEED = 60,         -- Velocidad vertical máxima
-    NOCLIP_CHECK_DIST = 3,           -- Distancia para check de noclip
-    TP_TOLERANCE = 15,               -- Tolerancia para teleport
-    NOCLIP_CONFIRM_TICKS = 3,        -- Frames para confirmar noclip
-    CHECK_INTERVAL = 0.25,           -- Cada cuanto revisar (en segundos)
-    MAX_VIOLATIONS = 3,              -- Violaciones antes de expulsar
-    VIOLATION_DECAY_TIME = 30,       -- Segundos para reducir 1 violación
+    MAX_WALKSPEED = 25,              -- Maximum walk speed
+    MAX_REAL_SPEED = 30,             -- Maximum real speed
+    MAX_AIR_TIME = 2.0,              -- Maximum seconds in the air
+    MAX_VERTICAL_SPEED = 60,         -- Maximum vertical speed
+    NOCLIP_CHECK_DIST = 3,           -- Distance for noclip check
+    TP_TOLERANCE = 15,               -- Teleport tolerance
+    NOCLIP_CONFIRM_TICKS = 3,        -- Frames to confirm noclip
+    CHECK_INTERVAL = 0.25,           -- How often to check (in seconds)
+    MAX_VIOLATIONS = 3,              -- Violations before kicking
+    VIOLATION_DECAY_TIME = 30,       -- Seconds to reduce 1 violation
 }
 ```
 
-## Datos del Jugador (playerData.lua)
+## Player Data (playerData.lua)
 
-Almacena información de cada jugador:
+Stores information for each player:
 
 ```lua
 function PlayerData.init(player)
     store[player.UserId] = {
-        violations = 0,           -- Contador de violaciones
-        airTime = 0,              -- Tiempo acumulado en el aire
-        noclipHits = 0,           -- Detecciones de noclip
-        lastViolationTick = tick(), -- Última violación
-        lastPosition = nil,       -- Posición anterior
-        tpHits = 0,               -- Detecciones de teleport
+        violations = 0,           -- Violation counter
+        airTime = 0,              -- Accumulated airborne time
+        noclipHits = 0,           -- Noclip detections
+        lastViolationTick = tick(), -- Last violation timestamp
+        lastPosition = nil,       -- Previous position
+        tpHits = 0,               -- Teleport detections
     }
 end
 ```
 
-## Tolerancia de Lag
+## Lag Tolerance
 
-El sistema ajusta su sensibilidad según el ping del jugador:
+The system adjusts its sensitivity based on the player's ping:
 
 ```lua
 local ping = player:GetNetworkPing() * 1000
@@ -302,14 +298,11 @@ end
 local lagTolerance = ping / 1000 * 2
 ```
 
-Si el ping es mayor a 400ms, se ignora el check.
-Si no, se suma una tolerancia basada en el ping.
+If ping is greater than 400ms, the check is skipped. Otherwise, a tolerance based on ping is added. This avoids false positives for players with high latency.
 
-Esto evita falsos positivos en jugadores con lag.
+## Discord Reporting
 
-## Envío a Discord
-
-Cuando un jugador es expulsado, se envía a Discord:
+When a player is kicked, a report is sent to Discord:
 
 ```lua
 local function sendToDiscord(player, reason, detail)
@@ -331,24 +324,22 @@ local function sendToDiscord(player, reason, detail)
 end
 ```
 
-El webhook está guardado en ServerStorage.WebHook.Value
+The webhook URL is stored in ServerStorage.WebHook.Value
 
-## Instalación
+## Installation
 
-1. Coloca la carpeta AntiCheat en ServerScriptService
-2. En ServerStorage crea un StringValue llamado "WebHook"
-3. Pega tu URL de webhook de Discord en el valor
-4. Listo, el script se ejecuta automáticamente
+1. Place the AntiCheat folder in ServerScriptService
+2. In ServerStorage, create a StringValue named "WebHook"
+3. Paste your Discord webhook URL into the value
+4. Done — the script runs automatically
 
-## Resumen
+## Summary
 
-El anticheat funciona así:
+The anticheat works as follows:
 
-1. Monitorea cada 0.25 segundos
-2. Ejecuta 4 checks diferentes
-3. Si detecta algo sospechoso, suma 1 violación
-4. Las violaciones decaen con el tiempo
-5. Si llega a 3 violaciones, expulsa al jugador
-6. Reporta a Discord
-
-Es un sistema simple pero efectivo contra hacks básicos.
+1. Monitors every 0.25 seconds
+2. Runs 4 different checks
+3. If something suspicious is detected, adds 1 violation
+4. Violations decay over time
+5. If 3 violations are reached, the player is kicked
+6. Reports to Discord
