@@ -4,13 +4,21 @@ A system that detects and removes players using hacks like fly, speed, noclip, a
 
 ## Project Structure
 AntiCheat/
+
 ├── AntiCheat.lua          # Main script
+
 ├── config.lua             # Configuration
+
 ├── playerData.lua         # Player data
+
 └── checks/                # Detection modules
+
 ├── fly.lua
+
 ├── speed.lua
+
 ├── noclip.lua
+
 └── teleport.lua
 
 ## How It Works
